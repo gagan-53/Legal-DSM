@@ -1,0 +1,18 @@
+SERVICE AGREEMENT
+
+This Service Agreement ("Agreement") is entered into as of January 15, 2024, between Acme Corporation ("Client") and Tech Services LLC ("Contractor").
+
+PAYMENT TERMS
+The Client shall pay the Contractor $50,000 for services rendered. Payment is due within 30 days of invoice date.
+
+TERMINATION
+Either party may terminate this Agreement with 30 days written notice. Upon termination, all outstanding invoices shall be paid within 15 days.
+
+CONFIDENTIALITY
+The Contractor agrees to maintain confidentiality of all proprietary information disclosed by the Client during the term of this Agreement.
+
+GOVERNING LAW
+This Agreement shall be governed by the laws of the State of California.
+
+INDEMNIFICATION
+The Contractor shall indemnify and hold harmless the Client from any claims arising from the Contractor's performance of services under this Agreement.

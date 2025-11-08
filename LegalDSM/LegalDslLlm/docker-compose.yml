@@ -1,0 +1,177 @@
+# Docker Compose for Legal-DSL LLM System
+# Note: Docker is not available in Replit. This file is for external deployment.
+# 
+# Usage:
+#   docker-compose up -d
+#   docker-compose logs -f web
+#   docker-compose down
+
+version: '3.8'
+
+services:
+  # Web application (Streamlit)
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    image: legal-dsl/web:latest
+    container_name: legal-dsl-web
+    ports:
+      - "5000:5000"
+    environment:
+      - MODEL_SERVICE_URL=http://model:8000
+      - DATABASE_URL=postgresql://postgres:password@db:5432/legal_dsl
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      - model
+      - db
+      - redis
+    restart: unless-stopped
+    networks:
+      - legal-dsl-network
+  
+  # Model inference service (FastAPI + TorchServe)
+  model:
+    build:
+      context: .
+      dockerfile: Dockerfile.model
+    image: legal-dsl/model:latest
+    container_name: legal-dsl-model
+    ports:
+      - "8000:8000"
+      - "8001:8001"  # Management API
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - MODEL_DIR=/models
+      - BATCH_SIZE=16
+      - MAX_WORKERS=4
+    volumes:
+      - ./models:/models
+      - ./model_cache:/model_cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      - legal-dsl-network
+  
+  # PostgreSQL database
+  db:
+    image: postgres:15-alpine
+    container_name: legal-dsl-db
+    environment:
+      - POSTGRES_DB=legal_dsl
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - legal-dsl-network
+  
+  # Redis cache
+  redis:
+    image: redis:7-alpine
+    container_name: legal-dsl-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - legal-dsl-network
+  
+  # MLflow tracking server
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: legal-dsl-mlflow
+    ports:
+      - "5001:5000"
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=postgresql://postgres:password@db:5432/mlflow
+      - MLFLOW_ARTIFACT_ROOT=s3://legal-dsl-models/mlflow-artifacts
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    command: >
+      mlflow server
+      --backend-store-uri postgresql://postgres:password@db:5432/mlflow
+      --default-artifact-root s3://legal-dsl-models/mlflow-artifacts
+      --host 0.0.0.0
+      --port 5000
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - legal-dsl-network
+  
+  # Prometheus monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: legal-dsl-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    restart: unless-stopped
+    networks:
+      - legal-dsl-network
+  
+  # Grafana dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: legal-dsl-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      - ./monitoring/grafana-dashboards:/etc/grafana/provisioning/dashboards
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - legal-dsl-network
+  
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: legal-dsl-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - web
+      - model
+    restart: unless-stopped
+    networks:
+      - legal-dsl-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  legal-dsl-network:
+    driver: bridge

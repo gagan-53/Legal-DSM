@@ -1,0 +1,70 @@
+EMPLOYMENT AGREEMENT
+
+This Employment Agreement ("Agreement") is made and entered into as of January 15, 2024, by and between Digital Solutions Corp. ("Company") and Jennifer Martinez ("Employee").
+
+1. POSITION AND DUTIES
+
+The Company hereby employs the Employee as Senior Software Engineer. The Employee shall report to the Chief Technology Officer and shall perform such duties as are customarily associated with such position.
+
+2. COMPENSATION
+
+The Company shall pay the Employee an annual base salary of $125,000, payable in accordance with the Company's standard payroll practices. The Employee's salary shall be reviewed annually and may be adjusted at the Company's discretion.
+
+3. BENEFITS
+
+The Employee shall be entitled to participate in the Company's employee benefit plans, including:
+- Health insurance (medical, dental, vision)
+- 401(k) retirement plan with 4% company match
+- Paid time off: 15 days per year
+- Sick leave: 10 days per year
+- Professional development allowance: $2,000 annually
+
+4. WORK SCHEDULE
+
+The Employee's standard work schedule shall be Monday through Friday, 9:00 AM to 5:00 PM, with flexibility for remote work up to two (2) days per week, subject to manager approval.
+
+5. CONFIDENTIALITY
+
+The Employee agrees to maintain the confidentiality of all proprietary information, trade secrets, and confidential business information of the Company. This obligation shall survive the termination of employment.
+
+6. INTELLECTUAL PROPERTY
+
+All inventions, discoveries, and improvements made by the Employee during employment that relate to the Company's business shall be the sole property of the Company.
+
+7. NON-COMPETE
+
+During employment and for a period of one (1) year following termination, the Employee shall not engage in any business that directly competes with the Company within a 50-mile radius of the Company's principal place of business.
+
+8. TERMINATION
+
+Either party may terminate this Agreement with thirty (30) days written notice. The Company may terminate the Employee immediately for cause, including but not limited to misconduct, breach of this Agreement, or poor performance.
+
+Upon termination, the Employee shall:
+- Return all Company property
+- Receive payment for accrued but unused vacation time
+- Participate in an exit interview
+
+9. SEVERANCE
+
+If the Employee is terminated without cause, the Company shall provide severance pay equal to two (2) months of base salary.
+
+10. GOVERNING LAW
+
+This Agreement shall be governed by the laws of the State of California.
+
+11. ENTIRE AGREEMENT
+
+This Agreement constitutes the entire agreement between the parties and supersedes all prior negotiations, representations, or agreements.
+
+IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.
+
+DIGITAL SOLUTIONS CORP.
+
+By: Robert Thompson
+Title: CEO
+Date: January 15, 2024
+
+EMPLOYEE:
+
+Jennifer Martinez
+Date: January 15, 2024

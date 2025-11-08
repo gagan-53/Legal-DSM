@@ -1,0 +1,146 @@
+TERMS OF SERVICE
+
+Last Updated: April 1, 2024
+
+Welcome to WebApp Pro! These Terms of Service ("Terms") govern your access to and use of our web application and services ("Services").
+
+By accessing or using our Services, you agree to be bound by these Terms. If you do not agree, do not use our Services.
+
+1. DEFINITIONS
+
+"User," "you," and "your" refer to you as a user of our Services.
+"We," "us," and "our" refer to WebApp Pro Inc.
+"Content" means text, images, data, and other materials posted on our Services.
+
+2. ACCOUNT REGISTRATION
+
+To use our Services, you must:
+- Be at least 18 years old or have parental consent
+- Provide accurate and complete registration information
+- Maintain the security of your account credentials
+- Notify us immediately of any unauthorized use
+
+You are responsible for all activities that occur under your account.
+
+3. SUBSCRIPTION AND PAYMENT
+
+Our Services are offered on a subscription basis:
+
+Basic Plan: $9.99/month
+- 5 GB storage
+- Up to 10 users
+- Email support
+
+Professional Plan: $29.99/month
+- 50 GB storage
+- Up to 100 users
+- Priority support
+- Advanced analytics
+
+Enterprise Plan: Custom pricing
+- Unlimited storage
+- Unlimited users
+- Dedicated account manager
+- Custom integrations
+
+Payment terms:
+- Subscriptions are billed monthly in advance
+- You may cancel at any time with 30 days notice
+- No refunds for partial months
+- Prices subject to change with 60 days notice
+
+4. ACCEPTABLE USE
+
+You agree not to:
+- Violate any laws or regulations
+- Infringe on intellectual property rights
+- Upload malicious code or viruses
+- Harass, abuse, or harm other users
+- Attempt to gain unauthorized access to our systems
+- Use the Services for illegal purposes
+- Scrape or data mine our Services
+- Interfere with the proper functioning of our Services
+
+5. INTELLECTUAL PROPERTY
+
+The Services and all content, features, and functionality are owned by WebApp Pro Inc. and are protected by copyright, trademark, and other intellectual property laws.
+
+You retain ownership of content you upload, but grant us a license to use, store, and display such content as necessary to provide the Services.
+
+6. DATA PRIVACY
+
+We collect and use your personal information in accordance with our Privacy Policy. By using our Services, you consent to such collection and use.
+
+We implement industry-standard security measures to protect your data, but cannot guarantee absolute security.
+
+7. TERMINATION
+
+We may suspend or terminate your access to the Services:
+- For violation of these Terms
+- For non-payment
+- If required by law
+- At our discretion with 30 days notice
+
+Upon termination:
+- Your right to use the Services ceases immediately
+- You may download your content within 30 days
+- We may delete your content after 30 days
+
+8. WARRANTY DISCLAIMER
+
+THE SERVICES ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. WE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+We do not warrant that:
+- The Services will be uninterrupted or error-free
+- Defects will be corrected
+- The Services are free from viruses or harmful components
+
+9. LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, WE SHALL NOT BE LIABLE FOR:
+- Any indirect, incidental, special, consequential, or punitive damages
+- Loss of profits, data, use, or goodwill
+- Service interruptions or data loss
+
+OUR TOTAL LIABILITY SHALL NOT EXCEED THE AMOUNT YOU PAID US IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM.
+
+10. INDEMNIFICATION
+
+You agree to indemnify and hold harmless WebApp Pro Inc., its officers, directors, employees, and agents from any claims, damages, or expenses arising from:
+- Your use of the Services
+- Your violation of these Terms
+- Your violation of any rights of third parties
+
+11. DISPUTE RESOLUTION
+
+Any disputes shall be resolved through binding arbitration in accordance with the American Arbitration Association rules. You waive your right to participate in class actions.
+
+12. GOVERNING LAW
+
+These Terms shall be governed by the laws of the State of California, without regard to conflict of laws principles.
+
+13. MODIFICATIONS
+
+We reserve the right to modify these Terms at any time. We will notify you of material changes via email or through the Services. Continued use after changes constitutes acceptance.
+
+14. CONTACT INFORMATION
+
+For questions about these Terms, contact us at:
+
+WebApp Pro Inc.
+123 Tech Street
+San Francisco, CA 94105
+Email: legal@webapppro.com
+Phone: (415) 555-0123
+
+15. MISCELLANEOUS
+
+- Entire Agreement: These Terms constitute the entire agreement between you and us.
+- Severability: If any provision is found invalid, the remaining provisions continue in effect.
+- Waiver: Failure to enforce any right does not waive that right.
+- Assignment: You may not assign these Terms without our consent.
+- Force Majeure: We are not liable for delays due to circumstances beyond our control.
+
+By using our Services, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
+
+© 2024 WebApp Pro Inc. All rights reserved.

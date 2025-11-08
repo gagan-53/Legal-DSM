@@ -1,0 +1,52 @@
+# Dockerfile for Model Inference Service
+# Note: Docker is not available in Replit. This file is for external deployment.
+
+FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python packages
+RUN pip install --no-cache-dir \
+    fastapi>=0.100.0 \
+    uvicorn[standard]>=0.23.0 \
+    transformers>=4.30.0 \
+    torch>=2.0.0 \
+    sentence-transformers>=2.2.0 \
+    faiss-cpu>=1.7.4 \
+    spacy>=3.8.0 \
+    PyPDF2>=3.0.1 \
+    python-docx>=1.2.0 \
+    scikit-learn>=1.7.0 \
+    pandas>=2.3.0 \
+    numpy>=2.0.0 \
+    pydantic>=2.0.0 \
+    python-multipart>=0.0.6 \
+    prometheus-client>=0.17.0 \
+    && python -m spacy download en_core_web_sm
+
+# Copy application code
+COPY models/ /app/models/
+COPY training/ /app/training/
+COPY evaluation/ /app/evaluation/
+COPY utils/ /app/utils/
+
+# Create API server (simplified for template)
+RUN echo 'from fastapi import FastAPI\napp = FastAPI()\n@app.get("/health")\nasync def health(): return {"status": "healthy"}' > /app/api.py
+
+# Expose ports
+EXPOSE 8000 8001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Run FastAPI server
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

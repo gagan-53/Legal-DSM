@@ -1,0 +1,316 @@
+# Kubernetes Deployment for Legal-DSL LLM
+# Note: Kubernetes is not available in Replit. This file is for external deployment.
+#
+# Usage:
+#   kubectl apply -f k8s-deployment.yaml
+#   kubectl get pods -n legal-dsl
+#   kubectl logs -f deployment/legal-dsl-web -n legal-dsl
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: legal-dsl
+
+---
+# ConfigMap for application configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: legal-dsl-config
+  namespace: legal-dsl
+data:
+  MODEL_DIR: "/models"
+  LOG_LEVEL: "INFO"
+  BATCH_SIZE: "16"
+  MAX_WORKERS: "4"
+
+---
+# Secret for sensitive data
+apiVersion: v1
+kind: Secret
+metadata:
+  name: legal-dsl-secrets
+  namespace: legal-dsl
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://postgres:password@postgres-service:5432/legal_dsl"
+  REDIS_URL: "redis://redis-service:6379/0"
+  AWS_ACCESS_KEY_ID: "your-access-key"
+  AWS_SECRET_ACCESS_KEY: "your-secret-key"
+
+---
+# PersistentVolumeClaim for model storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: model-storage
+  namespace: legal-dsl
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: standard
+
+---
+# Web Application Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: legal-dsl-web
+  namespace: legal-dsl
+  labels:
+    app: legal-dsl-web
+    version: v1.0.0
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: legal-dsl-web
+  template:
+    metadata:
+      labels:
+        app: legal-dsl-web
+    spec:
+      containers:
+      - name: web
+        image: legal-dsl/web:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+          name: http
+        env:
+        - name: MODEL_SERVICE_URL
+          value: "http://legal-dsl-model-service:8000"
+        envFrom:
+        - configMapRef:
+            name: legal-dsl-config
+        - secretRef:
+            name: legal-dsl-secrets
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "2Gi"
+          limits:
+            cpu: "2000m"
+            memory: "4Gi"
+        livenessProbe:
+          httpGet:
+            path: /_stcore/health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /_stcore/health
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          timeoutSeconds: 3
+        volumeMounts:
+        - name: data-storage
+          mountPath: /app/data
+      volumes:
+      - name: data-storage
+        emptyDir: {}
+
+---
+# Model Inference Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: legal-dsl-model
+  namespace: legal-dsl
+  labels:
+    app: legal-dsl-model
+    version: v1.0.0
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: legal-dsl-model
+  template:
+    metadata:
+      labels:
+        app: legal-dsl-model
+    spec:
+      containers:
+      - name: model
+        image: legal-dsl/model:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+        - containerPort: 8001
+          name: management
+        env:
+        - name: CUDA_VISIBLE_DEVICES
+          value: "0"
+        envFrom:
+        - configMapRef:
+            name: legal-dsl-config
+        - secretRef:
+            name: legal-dsl-secrets
+        resources:
+          requests:
+            cpu: "2000m"
+            memory: "8Gi"
+            nvidia.com/gpu: "1"
+          limits:
+            cpu: "4000m"
+            memory: "16Gi"
+            nvidia.com/gpu: "1"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+        volumeMounts:
+        - name: model-storage
+          mountPath: /models
+      volumes:
+      - name: model-storage
+        persistentVolumeClaim:
+          claimName: model-storage
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-tesla-v100
+
+---
+# Web Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: legal-dsl-web-service
+  namespace: legal-dsl
+  labels:
+    app: legal-dsl-web
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 5000
+    protocol: TCP
+    name: http
+  selector:
+    app: legal-dsl-web
+
+---
+# Model Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: legal-dsl-model-service
+  namespace: legal-dsl
+  labels:
+    app: legal-dsl-model
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  - port: 8001
+    targetPort: 8001
+    protocol: TCP
+    name: management
+  selector:
+    app: legal-dsl-model
+
+---
+# Horizontal Pod Autoscaler for Web
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: legal-dsl-web-hpa
+  namespace: legal-dsl
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: legal-dsl-web
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# Horizontal Pod Autoscaler for Model
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: legal-dsl-model-hpa
+  namespace: legal-dsl
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: legal-dsl-model
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: nvidia.com/gpu
+      target:
+        type: Utilization
+        averageUtilization: 75
+
+---
+# Ingress for HTTPS
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: legal-dsl-ingress
+  namespace: legal-dsl
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+  - hosts:
+    - legal-dsl.ai
+    - www.legal-dsl.ai
+    secretName: legal-dsl-tls
+  rules:
+  - host: legal-dsl.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: legal-dsl-web-service
+            port:
+              number: 80

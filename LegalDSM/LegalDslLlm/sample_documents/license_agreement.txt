@@ -1,0 +1,99 @@
+SOFTWARE LICENSE AGREEMENT
+
+This Software License Agreement ("Agreement") is entered into as of February 10, 2024, between CloudTech Software Inc., a Delaware corporation ("Licensor"), and Enterprise Solutions Ltd., a UK company ("Licensee").
+
+1. GRANT OF LICENSE
+
+Subject to the terms and conditions of this Agreement, Licensor hereby grants to Licensee a non-exclusive, non-transferable license to use the CloudTech Analytics Platform software ("Software") for internal business purposes only.
+
+2. LICENSE FEE
+
+Licensee shall pay Licensor an annual license fee of $50,000 USD. Payment is due within thirty (30) days of the invoice date. Late payments shall incur interest at 1.5% per month.
+
+3. SCOPE OF USE
+
+The license permits:
+- Installation on up to 100 user workstations
+- Deployment across 5 server instances
+- Access by up to 500 named users
+- Use in production and testing environments
+
+4. RESTRICTIONS
+
+Licensee shall not:
+- Modify, adapt, or create derivative works of the Software
+- Reverse engineer, decompile, or disassemble the Software
+- Sublicense, rent, lease, or loan the Software to third parties
+- Remove or alter any proprietary notices or labels
+- Use the Software for service bureau or time-sharing purposes
+
+5. INTELLECTUAL PROPERTY RIGHTS
+
+The Software and all intellectual property rights therein are and shall remain the exclusive property of Licensor. This Agreement does not convey ownership but only a limited right to use.
+
+6. WARRANTY
+
+Licensor warrants that the Software will perform substantially in accordance with the documentation for a period of ninety (90) days from delivery. Licensor's sole obligation under this warranty is to use reasonable efforts to correct any defects.
+
+EXCEPT AS EXPRESSLY PROVIDED ABOVE, THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+
+7. LIMITATION OF LIABILITY
+
+IN NO EVENT SHALL LICENSOR BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. LICENSOR'S TOTAL LIABILITY SHALL NOT EXCEED THE LICENSE FEES PAID IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM.
+
+8. SUPPORT AND MAINTENANCE
+
+Licensor shall provide:
+- Email and phone support during business hours (9 AM - 5 PM EST)
+- Software updates and bug fixes
+- Access to online documentation and knowledge base
+- Quarterly software releases with new features
+
+9. TERM AND TERMINATION
+
+This Agreement shall commence on February 10, 2024, and continue for an initial term of one (1) year. The Agreement shall automatically renew for successive one-year periods unless either party provides ninety (90) days written notice of non-renewal.
+
+Either party may terminate this Agreement immediately upon written notice if the other party:
+- Breaches any material term and fails to cure within thirty (30) days
+- Becomes insolvent or files for bankruptcy
+- Ceases business operations
+
+Upon termination:
+- All licenses granted hereunder shall immediately cease
+- Licensee shall cease all use of the Software
+- Licensee shall destroy all copies of the Software
+- No refund of license fees shall be provided
+
+10. CONFIDENTIALITY
+
+Each party agrees to maintain in confidence all confidential information disclosed by the other party and to use such information only as permitted under this Agreement.
+
+11. DATA PROTECTION
+
+Licensor shall comply with all applicable data protection laws, including GDPR and CCPA, in its processing of any personal data accessed through the Software.
+
+12. FORCE MAJEURE
+
+Neither party shall be liable for failure to perform due to causes beyond its reasonable control, including acts of God, war, strikes, or government restrictions.
+
+13. GOVERNING LAW AND JURISDICTION
+
+This Agreement shall be governed by the laws of the State of New York, without regard to conflict of laws principles. Any disputes shall be resolved in the courts of New York County, New York.
+
+14. ENTIRE AGREEMENT
+
+This Agreement constitutes the entire agreement between the parties and supersedes all prior agreements, whether written or oral, relating to the subject matter hereof.
+
+IN WITNESS WHEREOF, the parties have caused this Agreement to be executed by their duly authorized representatives.
+
+CLOUDTECH SOFTWARE INC.
+
+By: David Lee
+Title: Chief Commercial Officer
+Date: February 10, 2024
+
+ENTERPRISE SOLUTIONS LTD.
+
+By: Emma Watson
+Title: Head of Procurement
+Date: February 10, 2024

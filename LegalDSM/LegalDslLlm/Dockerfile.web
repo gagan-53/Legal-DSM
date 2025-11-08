@@ -1,0 +1,54 @@
+# Dockerfile for Streamlit Web Application
+# Note: Docker is not available in Replit. This file is for external deployment.
+
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    tesseract-ocr \
+    poppler-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY pyproject.toml ./
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
+    streamlit>=1.50.0 \
+    PyPDF2>=3.0.1 \
+    python-docx>=1.2.0 \
+    pandas>=2.3.0 \
+    numpy>=2.0.0 \
+    plotly>=6.3.0 \
+    pyyaml>=6.0.0 \
+    scikit-learn>=1.7.0 \
+    nltk>=3.9.0 \
+    textstat>=0.7.0 \
+    rouge-score>=0.1.2 \
+    spacy>=3.8.0 \
+    && python -m spacy download en_core_web_sm
+
+# Copy application code
+COPY . .
+
+# Download NLTK data
+RUN python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"
+
+# Create necessary directories
+RUN mkdir -p data logs model_cache
+
+# Expose Streamlit port
+EXPOSE 5000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:5000/_stcore/health || exit 1
+
+# Run Streamlit
+CMD ["streamlit", "run", "app.py", "--server.port=5000", "--server.address=0.0.0.0", "--server.headless=true"]

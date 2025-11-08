@@ -1,0 +1,215 @@
+Legal-DSL LLM Project Structure
+================================
+
+legal-dsl-llm/
+├── app.py                              # Main Streamlit web application
+│
+├── models/                             # Core ML modules
+│   ├── document_processor.py          # PDF/DOCX parsing, OCR support
+│   ├── clause_extractor.py            # Clause detection & classification
+│   ├── ner_extractor.py               # Named entity recognition
+│   ├── summarizer.py                  # Abstractive & extractive summarization
+│   └── rag_engine.py                  # RAG with FAISS vector search
+│
+├── training/                           # Training scripts & utilities
+│   ├── hf_trainer_script.py           # HuggingFace Trainer for all tasks
+│   └── pytorch_trainer.py             # Custom PyTorch training loops
+│
+├── evaluation/                         # Evaluation metrics & scripts
+│   ├── eval_metrics.py                # Precision, Recall, F1, ROUGE, etc.
+│   ├── eval_clause_classification.py  # Clause extraction evaluation
+│   ├── eval_ner.py                    # NER evaluation
+│   └── eval_summarization.py          # Summarization evaluation (ROUGE)
+│
+├── tests/                             # Unit & integration tests
+│   ├── test_clause_extractor.py       # Clause extraction tests
+│   ├── test_ner_extractor.py          # NER tests
+│   ├── test_summarizer.py             # Summarization tests
+│   ├── test_rag_engine.py             # RAG tests
+│   └── test_integration.py            # End-to-end integration tests
+│
+├── config/                            # Configuration files
+│   ├── train_config.yaml              # Training hyperparameters
+│   ├── annotation_schema.json         # Annotation guidelines & schema
+│   └── model_api_spec.json            # OpenAPI/REST API specification
+│
+├── research/                          # Research artifacts
+│   └── IEEE_PAPER.json                # Complete research paper (JSON format)
+│
+├── data/                              # Data directory (gitignored)
+│   ├── raw/                           # Raw legal documents (PDF, DOCX)
+│   ├── processed/                     # Processed text files
+│   └── annotated/                     # Annotated training data
+│       ├── clause_train.jsonl
+│       ├── clause_val.jsonl
+│       ├── clause_test.jsonl
+│       ├── ner_train.jsonl
+│       ├── ner_val.jsonl
+│       ├── ner_test.jsonl
+│       ├── summary_train.jsonl
+│       ├── summary_val.jsonl
+│       └── summary_test.jsonl
+│
+├── utils/                             # Utility functions
+│   ├── data_utils.py                  # Data loading & preprocessing
+│   ├── logging_utils.py               # Logging configuration
+│   └── metrics_utils.py               # Metric calculation helpers
+│
+├── docs/                              # Additional documentation
+│   ├── annotation_guidelines.pdf      # Detailed annotation instructions
+│   ├── deployment_guide.md            # Production deployment guide
+│   └── api_examples.md                # API usage examples
+│
+├── logs/                              # Training & application logs
+│   └── training/
+│       ├── clause_classifier/
+│       ├── ner_model/
+│       └── summarizer/
+│
+├── models_trained/                    # Saved model checkpoints (gitignored)
+│   ├── clause_classifier/
+│   │   ├── config.json
+│   │   ├── pytorch_model.bin
+│   │   └── tokenizer_config.json
+│   ├── ner_model/
+│   └── summarizer/
+│
+├── .streamlit/                        # Streamlit configuration
+│   └── config.toml
+│
+├── docker-compose.yml                 # Docker Compose for multi-service setup
+├── Dockerfile.web                     # Docker image for web application
+├── Dockerfile.model                   # Docker image for model service
+├── k8s-deployment.yaml                # Kubernetes deployment manifests
+│
+├── pyproject.toml                     # Python dependencies (uv/pip)
+├── requirements.txt                   # Python requirements (alternative)
+│
+├── README.md                          # Main documentation
+├── project_prompt.txt                 # Original project specification
+├── file_tree.txt                      # This file
+│
+├── .gitignore                         # Git ignore rules
+├── LICENSE                            # MIT License
+│
+└── monitoring/                        # Monitoring & observability
+    ├── prometheus.yml                 # Prometheus configuration
+    └── grafana-dashboards/            # Grafana dashboard JSON
+
+
+DIRECTORY DESCRIPTIONS
+======================
+
+models/
+  Core machine learning modules implementing the four main NLP tasks:
+  clause extraction, NER, summarization, and RAG. Each module is self-contained
+  and can be used independently or as part of the full pipeline.
+
+training/
+  Training scripts using HuggingFace Trainer and custom PyTorch loops.
+  Includes MLflow integration for experiment tracking and model versioning.
+
+evaluation/
+  Comprehensive evaluation metrics including:
+  - Clause classification: Precision, Recall, F1, Confusion Matrix
+  - NER: Entity-level F1, per-type metrics
+  - Summarization: ROUGE-1, ROUGE-2, ROUGE-L, BERTScore
+  - RAG: Retrieval metrics (P@k, R@k, MRR), Answer accuracy
+
+tests/
+  Unit tests (pytest) with >80% code coverage target.
+  Integration tests for end-to-end pipeline validation.
+
+config/
+  - train_config.yaml: All training hyperparameters with comments
+  - annotation_schema.json: Detailed annotation guidelines for each task
+  - model_api_spec.json: Complete OpenAPI 3.0 specification
+
+research/
+  IEEE_PAPER.json contains the full research paper with:
+  - Abstract, keywords, sections with paragraphs
+  - Experimental results with tables (datasets, hyperparameters, metrics)
+  - Figures with data arrays for exact reproduction
+  - Reproducibility information (commands, versions, seeds)
+
+data/
+  Data pipeline stages:
+  1. raw/ - Original PDFs, DOCX files
+  2. processed/ - Extracted text with metadata
+  3. annotated/ - Training data in JSONL format
+  
+  Note: Large files tracked with Git LFS (*.bin, *.pt, *.safetensors)
+
+
+FILE NAMING CONVENTIONS
+========================
+
+Training Data (JSONL):
+  - {task}_{split}.jsonl (e.g., clause_train.jsonl, ner_val.jsonl)
+  
+Model Checkpoints:
+  - checkpoint-{step}/ (e.g., checkpoint-1000/)
+  - best_model/ (symlink to best checkpoint)
+  
+Logs:
+  - {task}_{timestamp}.log (e.g., clause_classifier_20250126_143022.log)
+  
+Evaluation Results:
+  - {task}_eval_{split}.json (e.g., clause_eval_test.json)
+
+
+STORAGE RECOMMENDATIONS
+=======================
+
+Local Development:
+  - Models: ./models_trained/
+  - Data: ./data/
+  - Logs: ./logs/
+
+Production (External Storage):
+  - Models: s3://legal-dsl-models/ or gs://legal-dsl-models/
+  - Data: s3://legal-dsl-data/ or gs://legal-dsl-data/
+  - Logs: CloudWatch, Stackdriver, or ELK stack
+  - MLflow Artifacts: s3://legal-dsl-mlflow-artifacts/
+
+Git LFS Tracking:
+  - *.bin (PyTorch model files)
+  - *.safetensors (Safetensors format)
+  - *.pt (PyTorch checkpoints)
+  - *.pth (PyTorch state dicts)
+  - *.onnx (ONNX model files)
+
+
+COMPUTE REQUIREMENTS
+====================
+
+Task                    | Min Hardware     | Recommended          | Time (1 epoch)
+------------------------|------------------|----------------------|----------------
+Clause Classification   | CPU, 8GB RAM     | 1x V100 GPU, 32GB    | ~2 hours
+NER                     | CPU, 8GB RAM     | 1x V100 GPU, 32GB    | ~2 hours
+Summarization           | 1x V100 GPU      | 1x A100 GPU, 40GB    | ~8 hours
+Inference (all tasks)   | CPU, 16GB RAM    | 1x T4 GPU, 16GB      | <500ms/doc
+
+
+NEXT STEPS FOR NEW ENGINEERS
+=============================
+
+1. Clone repository
+   $ git clone https://github.com/legal-dsl-llm/legal-dsl-llm.git
+   $ cd legal-dsl-llm
+
+2. Install dependencies
+   $ pip install -r requirements.txt
+   $ python -m spacy download en_core_web_sm
+
+3. Run web application locally
+   $ streamlit run app.py --server.port 5000
+
+4. (Optional) Train models
+   $ python training/hf_trainer_script.py --task clause_classification ...
+
+5. (Optional) Run tests
+   $ pytest tests/ -v --cov=models
+
+6. (Optional) Deploy with Docker
+   $ docker-compose up -d

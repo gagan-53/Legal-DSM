@@ -1,0 +1,57 @@
+You are: Senior NLP Research Engineer + Production ML Engineer.
+
+Goal: Build "Legal-DSL LLM" — a domain-specific model and production pipeline to (a) extract and classify clauses (indemnity, termination, arbitration, confidentiality, payment, liability, force majeure, governing law, etc.), (b) do entity extraction (parties, dates, amounts), (c) generate concise abstractive summaries of documents, and (d) support RAG so outputs can be grounded to exact clause locations.
+
+Constraints & priorities:
+- Primary deliverable: IEEE research paper in JSON format (complete with reproducible experiment tables & figure metadata).
+- Secondary: Fully working code & models (Hugging Face & PyTorch preferred, but show TF equivalents if relevant).
+- Tertiary: Web app (React frontend or Streamlit minimal) + FastAPI backend exposing inference endpoints.
+- All documentation must be available as machine-readable JSON and human-friendly Markdown.
+- Provide deterministic reproducibility: seed values, versions of major libs, exact training commands, and Docker/K8s manifests.
+- Use open-source datasets where possible or show instructions to ingest private corpora (PDFs, DOCX). Always support OCR pipeline for scanned docs.
+- Provide annotation schema, example annotations, and a plan for human-in-the-loop verification and active learning.
+- Provide test cases, CI integration, and monitoring suggestions.
+
+Required components to produce now in this response:
+1. File tree structure (top-level).
+2. Implementation phases with tasks, estimated compute (small, medium, large), and explicit commands (bash/python) to run training, evaluation, and inference.
+3. Model architecture choices & hyperparameters for each subtask:
+   - Sequence tagging (clause boundary detection): fine-tuned Legal-BERT / RoBERTa / BERT-CRF or Llama 3-based token classification.
+   - Clause classification: sentence/segment classifier (fine-tuned BERT or Llama 3).
+   - NER: spaCy or fine-tuned transformer NER.
+   - Abstractive summarization: fine-tune a long-context LLM (e.g., Llama 3 / Qwen / LongT5 / BigBird-PEGASUS / Flan-T5-XXL) with SFT; provide extractive fallback like BERT-based sentence scorer + TextRank.
+   - RAG: Retriever (FAISS/Weaviate/Pinecone) + Generator (LLM). Describe vector dims / chunking / window strategy.
+4. Provide ready-to-run training scripts (python code blocks) and config examples (YAML/JSON) for Hugging Face Trainer and custom PyTorch loops. Include logging to MLflow.
+5. Provide an `IEEE_PAPER.json` with required keys: title, authors[], abstract, keywords[], sections[] (where each section is an object with headings, paragraphs[], tables[], figures[]). For experimental sections, include sample JSON tables for datasets, hyperparameters, metrics, and reproducible evaluation logs. Provide at least one example figure data as JSON (x,y values) for plotting.
+6. Provide `README.md` that explains: how to prepare data, how to run annotation UI, how to train and evaluate each model, how to run the web app locally and in Docker, and how to reproduce the paper’s tables/plots.
+7. Provide minimal but production-ready backend (FastAPI) and frontend (React or Streamlit). Include example Dockerfile(s) and `docker-compose.yml`.
+8. Provide sample unit tests and evaluation scripts for outputs (clause extraction F1, ROUGE-L for summarization, grounding accuracy).
+9. Provide metadata for all artifacts: expected file names, formats, and where to store (S3/GS/Git LFS suggestions).
+10. Provide a checklist to convert the JSON-format IEEE paper to a printable IEEE PDF (LaTeX snippet + mapping).
+
+Edge-case behavior & evaluation:
+- When model is uncertain (low confidence), return clause spans with confidences, and a link to source doc location (byte offsets and PDF page numbers when available) for human review.
+- For summarization, show both (a) model-generated abstractive summary and (b) extractive highlight with provenance of sentences (indices + offsets).
+- Provide an undo/correction REST endpoint so human edits feed back into active learning annotation storage.
+
+Now produce the full set of artifacts above in a single response. Use the following exact filenames in outputs where relevant: 
+- `IEEE_PAPER.json`
+- `README.md`
+- `project_prompt.txt`
+- `file_tree.txt`
+- `annotation_schema.json`
+- `model_api_spec.json`
+- `docker-compose.yml`
+- `Dockerfile.model`
+- `Dockerfile.web`
+- `k8s-deployment.yaml`
+- `train_config.yaml`
+- `hf_trainer_script.py`
+- `clause_extractor.py`
+- `summarizer.py`
+- `frontend/` (React or Streamlit app)
+- `tests/` (unit & integration test templates)
+
+Make no network calls. Use deterministic random seeds. Provide sample small synthetic data snippets inline. When presenting tables or figures, embed JSON arrays for the data so they can be plotted exactly by downstream tooling.
+
+Finish by producing a short "next actions" list of commands that an engineer runs in order (exact CLI commands) to go from repository clone → train → serve → test.

@@ -1,0 +1,317 @@
+# Training Configuration for Legal-DSL LLM Models
+# Use this config with: python hf_trainer_script.py --config train_config.yaml
+
+# ============================================================================
+# GENERAL SETTINGS
+# ============================================================================
+seed: 42  # For reproducibility
+experiment_name: "legal-dsl-llm-v1"
+mlflow_tracking_uri: "http://localhost:5000"  # MLflow server
+output_base_dir: "./models"
+
+# ============================================================================
+# DATA CONFIGURATION
+# ============================================================================
+data:
+  # Training datasets (use publicly available legal corpora)
+  clause_classification:
+    train: "data/annotated/clause_train.jsonl"
+    validation: "data/annotated/clause_val.jsonl"
+    test: "data/annotated/clause_test.jsonl"
+    # Public datasets: CUAD, LEDGAR, ContractNLI
+    
+  ner:
+    train: "data/annotated/ner_train.jsonl"
+    validation: "data/annotated/ner_val.jsonl"
+    test: "data/annotated/ner_test.jsonl"
+    # Format: BIO tagging with PARTY, DATE, AMOUNT, JURISDICTION entities
+    
+  summarization:
+    train: "data/annotated/summary_train.jsonl"
+    validation: "data/annotated/summary_val.jsonl"
+    test: "data/annotated/summary_test.jsonl"
+    # Format: {"document": "...", "summary": "..."}
+  
+  # Data preprocessing
+  max_seq_length: 512  # BERT/RoBERTa limit
+  max_summary_length: 256
+  chunk_overlap: 50
+  preprocessing_num_workers: 4
+
+# ============================================================================
+# MODEL CONFIGURATIONS
+# ============================================================================
+models:
+  # Clause Boundary Detection & Classification
+  clause_classifier:
+    base_model: "nlpaueb/legal-bert-base-uncased"  # Legal-BERT
+    # Alternatives: "roberta-base", "microsoft/deberta-v3-base"
+    model_type: "sequence_classification"
+    num_labels: 11  # 10 clause types + general
+    labels:
+      - indemnity
+      - termination
+      - arbitration
+      - confidentiality
+      - payment
+      - liability
+      - force_majeure
+      - governing_law
+      - warranty
+      - dispute_resolution
+      - general
+    
+    # Architecture
+    dropout: 0.1
+    hidden_dropout_prob: 0.1
+    attention_probs_dropout_prob: 0.1
+    classifier_dropout: 0.1
+    
+    # Use CRF layer for sequence tagging variant
+    use_crf: false
+  
+  # Named Entity Recognition
+  ner_model:
+    base_model: "nlpaueb/legal-bert-base-uncased"
+    model_type: "token_classification"
+    use_crf: true  # CRF improves NER performance
+    
+    # Entity labels (BIO scheme)
+    labels:
+      - O
+      - B-PARTY
+      - I-PARTY
+      - B-DATE
+      - I-DATE
+      - B-AMOUNT
+      - I-AMOUNT
+      - B-JURISDICTION
+      - I-JURISDICTION
+      - B-ORG
+      - I-ORG
+      - B-PERSON
+      - I-PERSON
+    
+    label_all_tokens: false  # Only label first token of each word
+  
+  # Abstractive Summarization
+  summarizer:
+    base_model: "google/long-t5-tglobal-base"
+    # Alternatives for production:
+    #   - "facebook/bart-large-cnn" (quality)
+    #   - "google/pegasus-large" (quality)
+    #   - "meta-llama/Llama-3-8B" (with SFT - best quality)
+    #   - "allenai/led-large-16384" (long documents)
+    
+    model_type: "seq2seq"
+    max_input_length: 4096  # LongT5 supports long context
+    max_target_length: 256
+    num_beams: 4  # Beam search
+    length_penalty: 2.0
+    no_repeat_ngram_size: 3
+
+# ============================================================================
+# TRAINING HYPERPARAMETERS
+# ============================================================================
+training:
+  # Compute resources
+  device: "cuda"  # cuda, cpu, mps
+  fp16: true  # Mixed precision training (2x speedup on V100/A100)
+  bf16: false  # Use for A100 GPUs
+  
+  # Batch sizes (adjust based on GPU memory)
+  per_device_train_batch_size: 16  # 16GB GPU: 8-16, 24GB GPU: 16-32, 40GB GPU: 32-64
+  per_device_eval_batch_size: 32
+  gradient_accumulation_steps: 2  # Effective batch size = 16 * 2 = 32
+  
+  # Optimizer
+  optimizer: "adamw_torch"
+  learning_rate: 2.0e-5
+  weight_decay: 0.01
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+  
+  # Learning rate schedule
+  lr_scheduler_type: "linear"  # linear, cosine, polynomial
+  warmup_ratio: 0.1  # 10% of total steps
+  warmup_steps: null  # Alternative to warmup_ratio
+  
+  # Training duration
+  num_train_epochs: 5
+  max_steps: -1  # Override epochs if set
+  
+  # Evaluation & Checkpointing
+  evaluation_strategy: "steps"  # steps, epoch
+  eval_steps: 500
+  save_strategy: "steps"
+  save_steps: 500
+  save_total_limit: 3  # Keep only 3 best checkpoints
+  load_best_model_at_end: true
+  metric_for_best_model: "eval_f1"  # f1, accuracy, loss
+  
+  # Logging
+  logging_strategy: "steps"
+  logging_steps: 100
+  logging_dir: "./logs"
+  report_to: ["mlflow"]  # mlflow, tensorboard, wandb
+  
+  # Reproducibility
+  seed: 42
+  data_seed: 42
+
+# ============================================================================
+# EVALUATION METRICS
+# ============================================================================
+evaluation:
+  # Clause Classification
+  clause_metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1
+    - confusion_matrix
+  
+  # NER
+  ner_metrics:
+    - seqeval_precision
+    - seqeval_recall
+    - seqeval_f1
+    - entity_level_accuracy
+  
+  # Summarization
+  summarization_metrics:
+    - rouge_1
+    - rouge_2
+    - rouge_l
+    - bleu
+    - meteor
+    - bertscore  # Optional: requires GPU
+
+# ============================================================================
+# RAG (Retrieval) CONFIGURATION
+# ============================================================================
+rag:
+  # Vector store
+  vector_db: "faiss"  # faiss, weaviate, pinecone, chromadb
+  embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+  # Production: "sentence-transformers/all-mpnet-base-v2" (higher quality)
+  
+  embedding_dims: 384  # MiniLM-L6: 384, mpnet: 768
+  
+  # Chunking strategy
+  chunk_size: 512
+  chunk_overlap: 50
+  chunking_method: "sentence_window"  # fixed, sentence, semantic
+  
+  # Retrieval
+  top_k: 5
+  similarity_threshold: 0.3
+  reranking: false  # Use cross-encoder for reranking
+  reranker_model: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  
+  # Index configuration
+  faiss_index_type: "IndexFlatL2"  # IndexFlatL2, IndexIVFFlat, IndexHNSW
+  faiss_nprobe: 10  # For IVF indices
+
+# ============================================================================
+# INFERENCE CONFIGURATION
+# ============================================================================
+inference:
+  batch_size: 32
+  use_half_precision: true
+  use_compile: false  # PyTorch 2.0 torch.compile
+  
+  # Confidence thresholds
+  clause_confidence_threshold: 0.5
+  ner_confidence_threshold: 0.6
+  rag_confidence_threshold: 0.3
+  
+  # Caching
+  cache_models: true
+  cache_dir: "./model_cache"
+
+# ============================================================================
+# DOCKER & KUBERNETES DEPLOYMENT
+# ============================================================================
+deployment:
+  # Docker
+  docker_image: "legal-dsl-llm:latest"
+  docker_base: "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime"
+  
+  # Kubernetes
+  replicas: 3
+  resources:
+    requests:
+      cpu: "2000m"
+      memory: "8Gi"
+      nvidia.com/gpu: "1"
+    limits:
+      cpu: "4000m"
+      memory: "16Gi"
+      nvidia.com/gpu: "1"
+  
+  # Health checks
+  liveness_probe:
+    path: "/health"
+    initial_delay_seconds: 30
+    period_seconds: 10
+  
+  readiness_probe:
+    path: "/ready"
+    initial_delay_seconds: 15
+    period_seconds: 5
+
+# ============================================================================
+# VERSIONING & ARTIFACT STORAGE
+# ============================================================================
+artifacts:
+  # Model versioning
+  model_registry: "mlflow"  # mlflow, huggingface_hub, s3
+  
+  # Storage backends
+  storage:
+    type: "s3"  # s3, gcs, azure_blob, local
+    bucket: "legal-dsl-models"
+    prefix: "models/v1/"
+  
+  # Git LFS for large files
+  use_git_lfs: true
+  git_lfs_patterns:
+    - "*.bin"
+    - "*.safetensors"
+    - "*.pt"
+    - "*.pth"
+
+# ============================================================================
+# ACTIVE LEARNING & HUMAN-IN-THE-LOOP
+# ============================================================================
+active_learning:
+  enabled: true
+  uncertainty_sampling: true
+  uncertainty_threshold: 0.5  # Flag for human review if confidence < threshold
+  
+  annotation_batch_size: 100
+  annotation_rounds: 5
+  
+  # Annotation UI
+  annotation_tool: "label-studio"  # label-studio, prodigy, custom
+  annotation_server: "http://localhost:8080"
+
+# ============================================================================
+# MONITORING & OBSERVABILITY
+# ============================================================================
+monitoring:
+  # Metrics
+  prometheus_enabled: true
+  prometheus_port: 9090
+  
+  # Logging
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  structured_logging: true
+  log_format: "json"
+  
+  # Alerts
+  alert_on_error_rate: 0.05  # Alert if error rate > 5%
+  alert_on_latency_p99: 2000  # Alert if p99 latency > 2000ms

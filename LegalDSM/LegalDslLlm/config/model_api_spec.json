@@ -1,0 +1,516 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Legal-DSL LLM API",
+    "description": "Production API for legal document processing: clause extraction, NER, summarization, and RAG",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Legal-DSL Team",
+      "email": "api@legal-dsl.ai"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  
+  "servers": [
+    {
+      "url": "https://api.legal-dsl.ai/v1",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:8000/v1",
+      "description": "Local development server"
+    }
+  ],
+  
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check endpoint",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {"type": "string", "example": "healthy"},
+                    "version": {"type": "string", "example": "1.0.0"},
+                    "timestamp": {"type": "string", "format": "date-time"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/documents/upload": {
+      "post": {
+        "summary": "Upload and process a legal document",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "PDF, DOCX, or TXT file"
+                  },
+                  "ocr": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable OCR for scanned documents"
+                  },
+                  "process_all": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Run all NLP tasks (clause extraction, NER, summarization)"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Document processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentProcessingResponse"
+                }
+              }
+            }
+          },
+          "400": {"description": "Invalid file format or request"},
+          "500": {"description": "Internal server error"}
+        }
+      }
+    },
+    
+    "/clauses/extract": {
+      "post": {
+        "summary": "Extract and classify clauses from text",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "Legal document text"
+                  },
+                  "confidence_threshold": {
+                    "type": "number",
+                    "minimum": 0.0,
+                    "maximum": 1.0,
+                    "default": 0.5
+                  },
+                  "clause_types": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Filter specific clause types (optional)"
+                  }
+                },
+                "required": ["text"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Clauses extracted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClauseExtractionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/entities/extract": {
+      "post": {
+        "summary": "Extract named entities (parties, dates, amounts, jurisdictions)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {"type": "string"},
+                  "entity_types": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Filter specific entity types"
+                  }
+                },
+                "required": ["text"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entities extracted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NERResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/summarize": {
+      "post": {
+        "summary": "Generate abstractive and extractive summaries",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {"type": "string"},
+                  "summary_type": {
+                    "type": "string",
+                    "enum": ["abstractive", "extractive", "both"],
+                    "default": "both"
+                  },
+                  "max_length": {
+                    "type": "integer",
+                    "default": 500
+                  },
+                  "include_provenance": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                },
+                "required": ["text"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Summary generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummarizationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/rag/query": {
+      "post": {
+        "summary": "Query document using RAG (Retrieval-Augmented Generation)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "question": {"type": "string"},
+                  "document_id": {
+                    "type": "string",
+                    "description": "Previously uploaded document ID"
+                  },
+                  "top_k": {
+                    "type": "integer",
+                    "default": 3,
+                    "description": "Number of relevant chunks to retrieve"
+                  }
+                },
+                "required": ["question", "document_id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Answer generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RAGResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/feedback": {
+      "post": {
+        "summary": "Submit corrections for active learning",
+        "description": "Human-in-the-loop feedback endpoint for model improvement",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prediction_id": {"type": "string"},
+                  "task_type": {
+                    "type": "string",
+                    "enum": ["clause", "ner", "summarization", "rag"]
+                  },
+                  "correction": {
+                    "type": "object",
+                    "description": "Corrected output"
+                  },
+                  "feedback": {
+                    "type": "string",
+                    "description": "Additional comments"
+                  }
+                },
+                "required": ["prediction_id", "task_type", "correction"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Feedback recorded successfully"
+          }
+        }
+      }
+    }
+  },
+  
+  "components": {
+    "schemas": {
+      "DocumentProcessingResponse": {
+        "type": "object",
+        "properties": {
+          "document_id": {"type": "string"},
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "filename": {"type": "string"},
+              "format": {"type": "string"},
+              "num_pages": {"type": "integer"},
+              "total_chars": {"type": "integer"}
+            }
+          },
+          "clauses": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/Clause"}
+          },
+          "entities": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/Entity"}
+          },
+          "summary": {"$ref": "#/components/schemas/Summary"}
+        }
+      },
+      
+      "ClauseExtractionResponse": {
+        "type": "object",
+        "properties": {
+          "clauses": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/Clause"}
+          },
+          "statistics": {
+            "type": "object",
+            "properties": {
+              "total_clauses": {"type": "integer"},
+              "by_type": {"type": "object"},
+              "avg_confidence": {"type": "number"},
+              "needs_review_count": {"type": "integer"}
+            }
+          }
+        }
+      },
+      
+      "Clause": {
+        "type": "object",
+        "properties": {
+          "clause_id": {"type": "string"},
+          "text": {"type": "string"},
+          "clause_type": {
+            "type": "string",
+            "enum": ["indemnity", "termination", "arbitration", "confidentiality", "payment", "liability", "force_majeure", "governing_law", "warranty", "dispute_resolution", "general"]
+          },
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "char_offset_start": {"type": "integer"},
+          "char_offset_end": {"type": "integer"},
+          "page_number": {"type": "integer", "nullable": true},
+          "needs_review": {"type": "boolean"}
+        }
+      },
+      
+      "NERResponse": {
+        "type": "object",
+        "properties": {
+          "entities": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/Entity"}
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total_entities": {"type": "integer"},
+              "by_type": {"type": "object"},
+              "unique_entities": {"type": "object"}
+            }
+          }
+        }
+      },
+      
+      "Entity": {
+        "type": "object",
+        "properties": {
+          "entity_type": {
+            "type": "string",
+            "enum": ["PARTY", "DATE", "AMOUNT", "JURISDICTION", "ORGANIZATION", "PERSON", "ADDRESS", "EMAIL", "PHONE"]
+          },
+          "text": {"type": "string"},
+          "start_offset": {"type": "integer"},
+          "end_offset": {"type": "integer"},
+          "confidence": {"type": "number"}
+        }
+      },
+      
+      "SummarizationResponse": {
+        "type": "object",
+        "properties": {
+          "abstractive_summary": {"type": "string"},
+          "extractive_summary": {
+            "type": "object",
+            "properties": {
+              "sentences": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "provenance": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "index": {"type": "integer"},
+                    "start": {"type": "integer"},
+                    "end": {"type": "integer"},
+                    "score": {"type": "number"}
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "original_length": {"type": "integer"},
+              "summary_length": {"type": "integer"},
+              "compression_ratio": {"type": "number"}
+            }
+          }
+        }
+      },
+      
+      "Summary": {
+        "type": "object",
+        "properties": {
+          "abstractive": {"type": "string"},
+          "extractive": {"type": "array", "items": {"type": "string"}},
+          "metadata": {"type": "object"}
+        }
+      },
+      
+      "RAGResponse": {
+        "type": "object",
+        "properties": {
+          "answer": {"type": "string"},
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": {"type": "string"},
+                "chunk_id": {"type": "integer"},
+                "start_offset": {"type": "integer"},
+                "end_offset": {"type": "integer"},
+                "similarity_score": {"type": "number"}
+              }
+            }
+          },
+          "confidence": {"type": "number"},
+          "num_sources_used": {"type": "integer"}
+        }
+      }
+    },
+    
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  
+  "security": [
+    {"ApiKeyAuth": []},
+    {"BearerAuth": []}
+  ],
+  
+  "tags": [
+    {
+      "name": "Documents",
+      "description": "Document upload and processing"
+    },
+    {
+      "name": "Clauses",
+      "description": "Clause extraction and classification"
+    },
+    {
+      "name": "Entities",
+      "description": "Named entity recognition"
+    },
+    {
+      "name": "Summarization",
+      "description": "Document summarization"
+    },
+    {
+      "name": "RAG",
+      "description": "Retrieval-augmented generation"
+    },
+    {
+      "name": "Feedback",
+      "description": "Active learning and corrections"
+    }
+  ]
+}
